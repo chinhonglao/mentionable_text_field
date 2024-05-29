@@ -29,11 +29,11 @@ class MyApp extends StatelessWidget {
 
 /// Home page.
 class MyHomePage extends StatefulWidget {
-  /// default constructor.
-  const MyHomePage({super.key, required this.title});
-
   /// Page title.
   final String title;
+
+  /// default constructor.
+  const MyHomePage({super.key, required this.title});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -46,14 +46,6 @@ class _MyHomePageState extends State<MyHomePage>
   late final _animationController = AnimationController(vsync: this);
   late MentionTextEditingController _textFieldController;
   final _resultStreamController = StreamController<String>();
-
-  @override
-  void dispose() {
-    _mentionableStreamController.close();
-    _animationController.dispose();
-    _resultStreamController.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage>
                           onControllerReady: (value) =>
                               _textFieldController = value,
                           maxLines: 1,
+                          mentionBackgroundColorl: Colors.green,
                           onSubmitted: print,
                           mentionables: const [
                             MyUser('John Doe'),
@@ -157,7 +150,6 @@ class _MyHomePageState extends State<MyHomePage>
                     onPressed: () => _resultStreamController
                         .add(_textFieldController.buildMentionedValue()),
                     style: ElevatedButton.styleFrom(
-                      primary: const Color(0xff53828c),
                       fixedSize: const Size.fromWidth(200),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100),
@@ -169,11 +161,19 @@ class _MyHomePageState extends State<MyHomePage>
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _mentionableStreamController.close();
+    _animationController.dispose();
+    _resultStreamController.close();
+    super.dispose();
   }
 }

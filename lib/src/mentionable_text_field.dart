@@ -9,7 +9,6 @@ import 'package:mentionable_text_field/src/list_extension.dart';
 import 'package:mentionable_text_field/src/string_extension.dart';
 
 part 'mention_text_editing_controller.dart';
-
 part 'mentionable.dart';
 
 /// The type of callback when mentionables candidate
@@ -33,72 +32,9 @@ typedef MentionablesChangedCallback = void Function(
 /// keep the controller given by [onControllerReady] and
 /// call [MentionTextEditingController.pickMentionable].
 class MentionableTextField extends StatefulWidget {
-  /// default constructor.
-  const MentionableTextField({
-    super.key,
-    required this.onMentionablesChanged,
-    this.onControllerReady,
-    this.mentionStyle,
-    this.expands = false,
-    this.readOnly = false,
-    this.toolbarOptions,
-    this.scribbleEnabled = true,
-    this.enableIMEPersonalizedLearning = true,
-    this.cursorWidth = 2.0,
-    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
-    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
-    this.scrollPadding = const EdgeInsets.all(20),
-    bool? enableInteractiveSelection,
-    this.clipBehavior = Clip.hardEdge,
-    this.dragStartBehavior = DragStartBehavior.start,
-    this.textAlign = TextAlign.start,
-    this.autofocus = false,
-    this.obscuringCharacter = '•',
-    this.obscureText = false,
-    this.autocorrect = true,
-    this.smartDashesType,
-    this.smartQuotesType,
-    this.enableSuggestions = true,
-    this.textCapitalization = TextCapitalization.none,
-    this.keyboardType,
-    this.mentionables = const [],
-    this.onTap,
-    this.escapingMentionCharacter = Constants.escapingMentionCharacter,
-    this.focusNode,
-    this.decoration,
-    this.textInputAction,
-    this.style,
-    this.strutStyle,
-    this.textAlignVertical,
-    this.textDirection,
-    this.maxLines,
-    this.minLines,
-    this.showCursor,
-    this.maxLength,
-    this.maxLengthEnforcement,
-    this.onChanged,
-    this.onEditingComplete,
-    this.onSubmitted,
-    this.onAppPrivateCommand,
-    this.inputFormatters,
-    this.enabled,
-    this.cursorHeight,
-    this.cursorRadius,
-    this.cursorColor,
-    this.keyboardAppearance,
-    this.selectionControls,
-    this.mouseCursor,
-    this.buildCounter,
-    this.scrollPhysics,
-    this.scrollController,
-    this.autofillHints,
-    this.restorationId,
-  })  : assert(
-          escapingMentionCharacter.length == 1,
-          'escapingMentionCharacter should be a single character.',
-        ),
-        enableInteractiveSelection =
-            enableInteractiveSelection ?? (!readOnly || !obscureText);
+  /// If [maxLength] is set to this value, only the "current input length"
+  /// part of the character counter is shown.
+  static const int noMaxLength = -1;
 
   /// A callback to retrieve the [TextField] controller when
   /// it's ready.
@@ -211,10 +147,6 @@ class MentionableTextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.showCursor}
   final bool? showCursor;
-
-  /// If [maxLength] is set to this value, only the "current input length"
-  /// part of the character counter is shown.
-  static const int noMaxLength = -1;
 
   /// The maximum number of characters (Unicode scalar values) to allow in the
   /// text field.
@@ -339,9 +271,6 @@ class MentionableTextField extends StatefulWidget {
   /// {@macro flutter.widgets.scrollable.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
 
-  /// {@macro flutter.widgets.editableText.selectionEnabled}
-  bool get selectionEnabled => enableInteractiveSelection;
-
   /// The cursor for a mouse pointer when it enters or is hovering over the
   /// widget.
   ///
@@ -433,6 +362,78 @@ class MentionableTextField extends StatefulWidget {
   /// {@macro flutter.services.TextInputConfiguration.enableIMEPersonalizedLearning}
   final bool enableIMEPersonalizedLearning;
 
+  final Color mentionBackgroundColorl;
+
+  /// default constructor.
+  const MentionableTextField({
+    super.key,
+    required this.onMentionablesChanged,
+    this.onControllerReady,
+    this.mentionStyle,
+    required this.mentionBackgroundColorl,
+    this.expands = false,
+    this.readOnly = false,
+    this.toolbarOptions,
+    this.scribbleEnabled = true,
+    this.enableIMEPersonalizedLearning = true,
+    this.cursorWidth = 2.0,
+    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
+    this.scrollPadding = const EdgeInsets.all(20),
+    bool? enableInteractiveSelection,
+    this.clipBehavior = Clip.hardEdge,
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.textAlign = TextAlign.start,
+    this.autofocus = false,
+    this.obscuringCharacter = '•',
+    this.obscureText = false,
+    this.autocorrect = true,
+    this.smartDashesType,
+    this.smartQuotesType,
+    this.enableSuggestions = true,
+    this.textCapitalization = TextCapitalization.none,
+    this.keyboardType,
+    this.mentionables = const [],
+    this.onTap,
+    this.escapingMentionCharacter = Constants.escapingMentionCharacter,
+    this.focusNode,
+    this.decoration,
+    this.textInputAction,
+    this.style,
+    this.strutStyle,
+    this.textAlignVertical,
+    this.textDirection,
+    this.maxLines,
+    this.minLines,
+    this.showCursor,
+    this.maxLength,
+    this.maxLengthEnforcement,
+    this.onChanged,
+    this.onEditingComplete,
+    this.onSubmitted,
+    this.onAppPrivateCommand,
+    this.inputFormatters,
+    this.enabled,
+    this.cursorHeight,
+    this.cursorRadius,
+    this.cursorColor,
+    this.keyboardAppearance,
+    this.selectionControls,
+    this.mouseCursor,
+    this.buildCounter,
+    this.scrollPhysics,
+    this.scrollController,
+    this.autofillHints,
+    this.restorationId,
+  })  : assert(
+          escapingMentionCharacter.length == 1,
+          'escapingMentionCharacter should be a single character.',
+        ),
+        enableInteractiveSelection =
+            enableInteractiveSelection ?? (!readOnly || !obscureText);
+
+  /// {@macro flutter.widgets.editableText.selectionEnabled}
+  bool get selectionEnabled => enableInteractiveSelection;
   @override
   State<MentionableTextField> createState() => _MentionableTextFieldState();
 }
@@ -443,30 +444,8 @@ class _MentionableTextFieldState extends State<MentionableTextField> {
     escapingMentionCharacter: widget.escapingMentionCharacter,
     onMentionablesChanged: widget.onMentionablesChanged,
     mentionStyle: widget.mentionStyle,
+    mentionBackgroundColor: widget.mentionBackgroundColorl,
   );
-
-  @override
-  void initState() {
-    super.initState();
-    widget.onControllerReady?.call(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onChanged(String value) {
-    final mentionables = widget.mentionables;
-    _controller._onFieldChanged(value, mentionables);
-    widget.onChanged?.call(value);
-  }
-
-  void _onSubmitted(_) {
-    final mentionedValue = _controller.buildMentionedValue();
-    widget.onSubmitted?.call(mentionedValue);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -525,5 +504,28 @@ class _MentionableTextFieldState extends State<MentionableTextField> {
       textInputAction: widget.textInputAction,
       toolbarOptions: widget.toolbarOptions,
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.onControllerReady?.call(_controller);
+  }
+
+  void _onChanged(String value) {
+    final mentionables = widget.mentionables;
+    _controller._onFieldChanged(value, mentionables);
+    widget.onChanged?.call(value);
+  }
+
+  void _onSubmitted(_) {
+    final mentionedValue = _controller.buildMentionedValue();
+    widget.onSubmitted?.call(mentionedValue);
   }
 }

@@ -11,16 +11,6 @@ part of 'mentionable_text_field.dart';
 /// use [buildMentionedValue].
 ///
 class MentionTextEditingController extends TextEditingController {
-  /// default constructor.
-  MentionTextEditingController({
-    required MentionablesChangedCallback onMentionablesChanged,
-    this.escapingMentionCharacter = Constants.escapingMentionCharacter,
-    TextStyle? mentionStyle,
-  })  : _onMentionablesChanged = onMentionablesChanged,
-        _storedMentionables = [],
-        _mentionStyle =
-            mentionStyle ?? const TextStyle(fontWeight: FontWeight.bold);
-
   /// Character that is excluded from keyboard
   /// to replace the mentions (not visible to users).
   final String escapingMentionCharacter;
@@ -28,10 +18,98 @@ class MentionTextEditingController extends TextEditingController {
   /// [TextStyle] applied to mentionables in Text Field.
   final TextStyle _mentionStyle;
 
+  ///[Color] applied as mention text background
+  final Color mentionBackgroundColor;
+
   /// List of [Mentionable] present in the [TextField].
   /// Order of elements is the same as in the [TextField].
   final List<Mentionable> _storedMentionables;
+
   final MentionablesChangedCallback _onMentionablesChanged;
+
+  /// default constructor.
+  MentionTextEditingController({
+    required MentionablesChangedCallback onMentionablesChanged,
+    this.escapingMentionCharacter = Constants.escapingMentionCharacter,
+    TextStyle? mentionStyle,
+    this.mentionBackgroundColor = Colors.transparent,
+  })  : _onMentionablesChanged = onMentionablesChanged,
+        _storedMentionables = [],
+        _mentionStyle =
+            mentionStyle ?? const TextStyle(fontWeight: FontWeight.bold);
+
+  /// Get the real value of the field with the mentions transformed
+  /// thanks to [Mentionable.buildMention].
+  String buildMentionedValue() {
+    final mentionQueue = _mentionQueue();
+    return text.replaceAllMapped(
+      escapingMentionCharacter,
+      (_) => mentionQueue.removeFirst().buildMention(),
+    );
+  }
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    final regexp =
+        RegExp('(?=$escapingMentionCharacter)|(?<=$escapingMentionCharacter)');
+    // split result on "Hello ∞ where is ∞?" is: [Hello,∞, where is ,∞,?]
+    final res = text.split(regexp);
+    final mentionQueue = _mentionQueue();
+    return TextSpan(
+      style: style,
+      children: res.map((e) {
+        if (e == escapingMentionCharacter) {
+          final mention = mentionQueue.removeFirst();
+          // Mandatory WidgetSpan so that it takes the appropriate char number.
+          return WidgetSpan(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: mentionBackgroundColor,
+              ),
+              padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+              child: Text(
+                mention._fullMentionLabel,
+                style: _mentionStyle,
+              ),
+            ),
+          );
+          // return WidgetSpan(
+          //   child: Text(
+          //     mention._fullMentionLabel,
+          //     style: _mentionStyle,
+          //   ),
+          // );
+        }
+        return TextSpan(text: e, style: style);
+      }).toList(),
+    );
+  }
+
+  /// Add the mention to this controller.
+  /// [_onMentionablesChanged] is called with empty list,
+  /// yet there are no candidates anymore.
+  void pickMentionable(Mentionable mentionable) {
+    final candidate = _getMentionCandidate(text);
+    if (candidate != null) {
+      _addMention(candidate, mentionable);
+      _onMentionablesChanged([]);
+    }
+  }
+
+  void _addMention(String candidate, Mentionable mentionable) {
+    final indexSelection = selection.base.offset;
+    final textPart = text.substring(0, indexSelection);
+    final indexInsertion = textPart.countChar(escapingMentionCharacter);
+    _storedMentionables.insert(indexInsertion, mentionable);
+    text = '${text.replaceAll(candidate, escapingMentionCharacter)} ';
+    selection =
+        TextSelection.collapsed(offset: indexSelection - candidate.length + 2);
+  }
 
   String? _getMentionCandidate(String value) {
     const mentionCharacter = Constants.mentionCharacter;
@@ -50,16 +128,6 @@ class MentionTextEditingController extends TextEditingController {
 
   Queue<Mentionable> _mentionQueue() =>
       Queue<Mentionable>.from(_storedMentionables);
-
-  void _addMention(String candidate, Mentionable mentionable) {
-    final indexSelection = selection.base.offset;
-    final textPart = text.substring(0, indexSelection);
-    final indexInsertion = textPart.countChar(escapingMentionCharacter);
-    _storedMentionables.insert(indexInsertion, mentionable);
-    text = '${text.replaceAll(candidate, escapingMentionCharacter)} ';
-    selection =
-        TextSelection.collapsed(offset: indexSelection - candidate.length + 2);
-  }
 
   void _onFieldChanged(
     String value,
@@ -85,55 +153,5 @@ class MentionTextEditingController extends TextEditingController {
     } else {
       _onMentionablesChanged([]);
     }
-  }
-
-  @override
-  TextSpan buildTextSpan({
-    required BuildContext context,
-    TextStyle? style,
-    required bool withComposing,
-  }) {
-    final regexp =
-        RegExp('(?=$escapingMentionCharacter)|(?<=$escapingMentionCharacter)');
-    // split result on "Hello ∞ where is ∞?" is: [Hello,∞, where is ,∞,?]
-    final res = text.split(regexp);
-    final mentionQueue = _mentionQueue();
-    return TextSpan(
-      style: style,
-      children: res.map((e) {
-        if (e == escapingMentionCharacter) {
-          final mention = mentionQueue.removeFirst();
-          // Mandatory WidgetSpan so that it takes the appropriate char number.
-          return WidgetSpan(
-            child: Text(
-              mention._fullMentionLabel,
-              style: _mentionStyle,
-            ),
-          );
-        }
-        return TextSpan(text: e, style: style);
-      }).toList(),
-    );
-  }
-
-  /// Add the mention to this controller.
-  /// [_onMentionablesChanged] is called with empty list,
-  /// yet there are no candidates anymore.
-  void pickMentionable(Mentionable mentionable) {
-    final candidate = _getMentionCandidate(text);
-    if (candidate != null) {
-      _addMention(candidate, mentionable);
-      _onMentionablesChanged([]);
-    }
-  }
-
-  /// Get the real value of the field with the mentions transformed
-  /// thanks to [Mentionable.buildMention].
-  String buildMentionedValue() {
-    final mentionQueue = _mentionQueue();
-    return text.replaceAllMapped(
-      escapingMentionCharacter,
-      (_) => mentionQueue.removeFirst().buildMention(),
-    );
   }
 }
